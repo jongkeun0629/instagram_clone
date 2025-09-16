@@ -1,0 +1,23 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: instagram_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+      POSTGRES_DB: instagram_db
+    ports:
+      - "5433:5432" # 내/외부 포트 연결
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # 데이터 영구 저장(볼륨)
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql # 로컬 위치 / 컨테이너 반영
+    restart: unless-stopped # 재부팅 시 DB 재시작
+    networks:
+      - instagram_network
+
+volumes:
+  postgres_data:
+
+networks:
+  instagram_network:
+    driver: bridge # 도커 자체 네트워크
