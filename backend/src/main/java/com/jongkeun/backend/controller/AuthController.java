@@ -1,5 +1,6 @@
 package com.jongkeun.backend.controller;
 
+import com.jongkeun.backend.dto.AuthRequest;
 import com.jongkeun.backend.dto.AuthResponse;
 import com.jongkeun.backend.dto.RegisterRequest;
 import com.jongkeun.backend.service.AuthService;
@@ -22,5 +23,12 @@ public class AuthController {
             @Valid @RequestBody RegisterRequest request
     ) {
         return ResponseEntity.ok(authService.register(request));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> authenticate(
+            @Valid @RequestBody AuthRequest request
+    ) {
+        return ResponseEntity.ok(authService.authenticate(request));
     }
 }

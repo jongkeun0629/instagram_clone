@@ -1,15 +1,19 @@
 package com.jongkeun.backend.service;
 
+import com.jongkeun.backend.dto.AuthRequest;
 import com.jongkeun.backend.dto.AuthResponse;
 import com.jongkeun.backend.dto.RegisterRequest;
 import com.jongkeun.backend.dto.UserDto;
 import com.jongkeun.backend.entity.AuthProvider;
 import com.jongkeun.backend.entity.User;
+import com.jongkeun.backend.exception.AuthenticationException;
+import com.jongkeun.backend.exception.BadRequestException;
 import com.jongkeun.backend.exception.UserAlreadyExistsException;
 import com.jongkeun.backend.repository.UserRepository;
 import com.jongkeun.backend.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -48,5 +52,33 @@ public class AuthService {
                 .refreshToken(refreshToken)
                 .user(UserDto.fromEntity(user))
                 .build();
+    }
+
+    public AuthResponse authenticate(AuthRequest request) {
+        try {
+            String loginId = request.getEmail() != null ? request.getEmail() : request.getUsername();
+
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginId,
+                            request.getPassword()
+                    )
+            );
+
+            User user = userRepository.findByEmail(loginId)
+                    .or(() -> userRepository.findByUsername(loginId))
+                    .orElseThrow(() -> new AuthenticationException("Authentication failed"));
+
+            String jwtToken = jwtService.generateToken(user);
+            String refreshToken = jwtService.generateRefreshToken(user);
+
+            return AuthResponse.builder()
+                    .accessToken(jwtToken)
+                    .refreshToken(refreshToken)
+                    .user(UserDto.fromEntity(user))
+                    .build();
+        } catch (BadRequestException e) {
+            throw new AuthenticationException("Invalid email or password");
+        }
     }
 }
