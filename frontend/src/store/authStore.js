@@ -56,6 +56,8 @@ const useAuthStore = create((set) => ({
       error: null,
     });
   },
+
+  setAuth: (authData) => set(authData),
 }));
 
 export default useAuthStore;
