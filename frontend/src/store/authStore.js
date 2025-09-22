@@ -10,9 +10,7 @@ const useAuthStore = create((set) => ({
   login: async (userData) => {
     set({ loading: true, error: null });
     try {
-      // 로그인 요청
       const data = await authService.login(userData);
-      // 상태 변경
       set({
         user: data.user,
         isAuthenticated: true,
@@ -24,15 +22,14 @@ const useAuthStore = create((set) => ({
         loading: false,
         error: err.response?.data?.message || "Login failed",
       });
+      throw err;
     }
   },
 
   register: async (userData) => {
     set({ loading: true, error: null });
     try {
-      // 서버로부터 데이터 요청 & 응답
       const data = await authService.register(userData);
-      // set에 반영
       set({
         user: data.user,
         isAuthenticated: true,
