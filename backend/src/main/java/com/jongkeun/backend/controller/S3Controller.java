@@ -20,9 +20,4 @@ public class S3Controller {
         return ResponseEntity.ok(Map.of("url", url));
     }
 
-    @GetMapping("/presign")
-    public ResponseEntity<String> getPresignedUrl(@RequestParam String url) {
-        String presignedUrl = s3Service.generatePresignedUrl(url, 1);
-        return ResponseEntity.ok(presignedUrl);
-    }
 }
