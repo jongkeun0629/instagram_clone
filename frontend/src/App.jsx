@@ -5,6 +5,7 @@ import Signup from "./pages/signup";
 import Login from "./pages/login";
 import useAuthStore from "./store/authStore";
 import OAuth2Callback from "./pages/OAuth2Callback";
+import Profile from "./pages/profile";
 
 const App = () => {
   const { isAuthenticated } = useAuthStore();
@@ -24,6 +25,12 @@ const App = () => {
         <Route
           path="/"
           element={isAuthenticated ? <Home /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/profile/:username"
+          element={
+            isAuthenticated ? <Profile /> : <Navigate to="/login" replace />
+          }
         />
       </Routes>
     </BrowserRouter>

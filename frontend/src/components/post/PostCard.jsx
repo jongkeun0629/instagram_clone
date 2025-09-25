@@ -24,6 +24,8 @@ const PostCard = ({ post }) => {
   const { toggleLike } = useLikeStore();
 
   const menuRef = useRef(null);
+  const commentRef = useRef(null);
+  const commentButtonRef = useRef(null); // 1. 댓글 버튼을 위한 ref 추가
 
   const isOwner = post.user.id == user.id;
 
@@ -60,19 +62,28 @@ const PostCard = ({ post }) => {
 
   useEffect(() => {
     const handleClickOutSide = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
+      // 2. menuRef, commentRef, 그리고 commentButtonRef의 외부 클릭만 감지
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target) &&
+        commentRef.current &&
+        !commentRef.current.contains(event.target) &&
+        commentButtonRef.current &&
+        !commentButtonRef.current.contains(event.target)
+      ) {
         setShowMenu(false);
-        // 댓글 창
+        setShowComments(false);
       }
     };
 
-    if (showMenu) {
+    if (showMenu || showComments) {
       document.addEventListener("mousedown", handleClickOutSide);
-      return () => {
-        document.removeEventListener("mousedown", handleClickOutSide);
-      };
     }
-  }, [showMenu]);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutSide);
+    };
+  }, [showMenu, showComments]);
 
   useEffect(() => {
     const getImage = async () => {
@@ -181,9 +192,11 @@ const PostCard = ({ post }) => {
                 <span className="text-sm font-medium">{likeCount}</span>
               </button>
 
+              {/* 1. 댓글 버튼에 ref 할당 */}
               <button
                 className="flex items-center space-x-1 transition-colors text-gray-700/50 hover:text-blue-500"
                 onClick={() => setShowComments(!showComments)}
+                ref={commentButtonRef}
               >
                 <FiMessageCircle size={20} />
                 <span className="text-sm font-medium">{commentCount}</span>
@@ -202,9 +215,14 @@ const PostCard = ({ post }) => {
           </p>
         </div>
 
+        {/* 1. 댓글창을 감싸는 div에 ref 할당 */}
         {showComments && (
-          <div className="px-4">
-            <CommentSection post={post} />
+          <div className="px-4" ref={commentRef}>
+            <CommentSection
+              post={post}
+              commentCount={commentCount}
+              setCommentCount={setCommentCount}
+            />
           </div>
         )}
 
