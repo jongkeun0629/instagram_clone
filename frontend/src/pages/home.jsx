@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import useAuthStore from "../store/authStore";
 import { useNavigate } from "react-router-dom";
 import Avatar from "../components/common/Avatar";
-import usePostStore from "../store/postStore";
 import PostList from "../components/post/PostList";
 import CreatePost from "../components/post/CreatePost";
+import usePostStore from "../store/postStore";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -19,6 +19,14 @@ const Home = () => {
     logout();
     navigate("/login");
   };
+
+  useEffect(() => {
+    const loadPosts = async () => {
+      fetchPosts();
+    };
+
+    loadPosts();
+  }, [fetchPosts]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex justify-center">
@@ -72,7 +80,7 @@ const Home = () => {
 
         <main className="pt-16 pb-20">
           <div className="p-4">
-            <PostList />
+            <PostList posts={posts} />
           </div>
         </main>
 

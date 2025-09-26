@@ -28,6 +28,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.id = :id AND p.deleted = false")
     Optional<Post> findByIdAndNotDeleted(@Param("id") Long id);
 
-    @Query("SELECT COUNT(p) FROM Post p WHERE p.user = :user AND p.deleted = false")
-    long countByUserAndNotDeleted(@Param("user") User user);
+    @Query("SELECT COUNT(p) FROM Post p WHERE p.user.id = :userId AND p.deleted = false")
+    long countByUserIdAndNotDeleted(@Param("userId") Long userId);
 }
