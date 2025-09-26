@@ -17,15 +17,17 @@ import CreatePost from "./CreatePost";
 import axios from "axios";
 import useLikeStore from "../../store/likeStore";
 import CommentSection from "../comment/CommentSection";
+import useBookmarkStore from "../../store/bookmarkStore";
 
 const PostCard = ({ post }) => {
   const { user } = useAuthStore();
   const { deletePost } = usePostStore();
   const { toggleLike } = useLikeStore();
+  const { toggleBookmark, getIsBookmarked } = useBookmarkStore();
 
   const menuRef = useRef(null);
-  const commentRef = useRef(null);
-  const commentButtonRef = useRef(null); // 1. 댓글 버튼을 위한 ref 추가
+
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
   const isOwner = post.user.id == user.id;
 
@@ -34,8 +36,8 @@ const PostCard = ({ post }) => {
   const [imageUrl, setImageUrl] = useState("");
   const [isLiked, setIsLiked] = useState(post?.liked);
   const [likeCount, setLikeCount] = useState(post?.likeCount);
-  const [commentCount, setCommentCount] = useState(post?.commentCount);
   const [showComments, setShowComments] = useState(false);
+  const [commentCount, setCommentCount] = useState(post?.commentCount);
 
   const handleDelete = async () => {
     if (window.confirm("Are you sure you want to delete this post?")) {
@@ -60,30 +62,26 @@ const PostCard = ({ post }) => {
     }
   };
 
+  const handleBookmark = async () => {
+    try {
+      setIsBookmarked(await toggleBookmark(post.id));
+    } catch (err) {}
+  };
+
   useEffect(() => {
     const handleClickOutSide = (event) => {
-      // 2. menuRef, commentRef, 그리고 commentButtonRef의 외부 클릭만 감지
-      if (
-        menuRef.current &&
-        !menuRef.current.contains(event.target) &&
-        commentRef.current &&
-        !commentRef.current.contains(event.target) &&
-        commentButtonRef.current &&
-        !commentButtonRef.current.contains(event.target)
-      ) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
         setShowMenu(false);
-        setShowComments(false);
       }
     };
 
-    if (showMenu || showComments) {
+    if (showMenu) {
       document.addEventListener("mousedown", handleClickOutSide);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutSide);
+      };
     }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutSide);
-    };
-  }, [showMenu, showComments]);
+  }, [showMenu]);
 
   useEffect(() => {
     const getImage = async () => {
@@ -116,6 +114,19 @@ const PostCard = ({ post }) => {
 
     getImage();
   }, [post]);
+
+  useEffect(() => {
+    const loadIsBookmarked = async () => {
+      try {
+        if (!post) return;
+
+        setIsBookmarked(await getIsBookmarked(post.id));
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    loadIsBookmarked();
+  }, [post, getIsBookmarked]);
 
   return (
     <>
@@ -192,19 +203,29 @@ const PostCard = ({ post }) => {
                 <span className="text-sm font-medium">{likeCount}</span>
               </button>
 
-              {/* 1. 댓글 버튼에 ref 할당 */}
               <button
                 className="flex items-center space-x-1 transition-colors text-gray-700/50 hover:text-blue-500"
                 onClick={() => setShowComments(!showComments)}
-                ref={commentButtonRef}
               >
                 <FiMessageCircle size={20} />
                 <span className="text-sm font-medium">{commentCount}</span>
               </button>
             </div>
 
-            <button className="transition-all duration-200 text-gray-700 hover:text-gray-900">
-              <FiBookmark size={20} className="fill-current" />
+            <button
+              className={`transition-all duration-200 ${
+                isBookmarked
+                  ? "text-gray-900"
+                  : "text-gray-700 hover:text-gray-900"
+              }`}
+              onClick={handleBookmark}
+            >
+              <FiBookmark
+                size={20}
+                className={`transition-all duration-200 ${
+                  isBookmarked ? "fill-current" : ""
+                }`}
+              />
             </button>
           </div>
         </div>
@@ -215,9 +236,8 @@ const PostCard = ({ post }) => {
           </p>
         </div>
 
-        {/* 1. 댓글창을 감싸는 div에 ref 할당 */}
         {showComments && (
-          <div className="px-4" ref={commentRef}>
+          <div className="px-4">
             <CommentSection
               post={post}
               commentCount={commentCount}

@@ -7,6 +7,8 @@ import useUserStore from "../store/userStore";
 import useAuthStore from "../store/authStore";
 import usePostStore from "../store/postStore";
 import PostList from "../components/post/PostList";
+import useBookmarkStore from "../store/bookmarkStore";
+import BookmarkCard from "../components/bookmark/BookmarkCard";
 
 const Profile = () => {
   const { username } = useParams();
@@ -16,6 +18,8 @@ const Profile = () => {
   const { user: currentUser } = useAuthStore();
   const { userPosts, userPostCount, getUserPosts, getUserPostCount } =
     usePostStore();
+  const { bookmarkedPosts, toggleBookmark, getBookmarkedPosts } =
+    useBookmarkStore();
 
   const [activeTab, setActiveTab] = useState("posts");
 
@@ -78,13 +82,26 @@ const Profile = () => {
     loadUserPostCount();
   }, [userProfile, getUserPostCount]);
 
-  useEffect(() => console.log(activeTab === "posts"), [activeTab]);
-  useEffect(() => console.log(isOwnProfile), [isOwnProfile]);
+  useEffect(() => {
+    const loadBookmarkedPosts = async () => {
+      try {
+        if (!currentUser || activeTab !== "bookmark") return;
+
+        await getBookmarkedPosts();
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    loadBookmarkedPosts();
+  }, [activeTab, currentUser, getBookmarkedPosts]);
+
+  useEffect(() => console.log(bookmarkedPosts), [bookmarkedPosts]);
 
   return (
     <div className="bg-gray-50">
       <div className="bg-white min-h-screen max-w-2xl mx-auto flex flex-col">
-        <header className="border-b border-gray-300 sticky top-0 z-40">
+        <header className="bg-white border-b border-gray-300 sticky top-0 z-40">
           <div className="flex items-center justify-between px-4 py-4">
             <Link className="text-gray-700 hover:text-black" to="/">
               <FiArrowLeft size={24} />
@@ -184,7 +201,14 @@ const Profile = () => {
           {activeTab === "bookmark" && (
             <>
               {isOwnProfile ? (
-                <div className="flex justify-center">Bookmark List</div>
+                <div className="grid grid-cols-3 gap-1">
+                  {bookmarkedPosts?.map((bookmarkedPost) => (
+                    <BookmarkCard
+                      key={bookmarkedPost.id}
+                      bookmarkedPost={bookmarkedPost}
+                    />
+                  ))}
+                </div>
               ) : (
                 <div>
                   <div className="text-center py-12">

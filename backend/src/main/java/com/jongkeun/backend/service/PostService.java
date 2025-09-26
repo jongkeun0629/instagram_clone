@@ -6,6 +6,7 @@ import com.jongkeun.backend.entity.Post;
 import com.jongkeun.backend.entity.User;
 import com.jongkeun.backend.exception.ResourceNotFoundException;
 import com.jongkeun.backend.exception.UnauthorizedException;
+import com.jongkeun.backend.repository.BookmarkRepository;
 import com.jongkeun.backend.repository.CommentRepository;
 import com.jongkeun.backend.repository.LikeRepository;
 import com.jongkeun.backend.repository.PostRepository;
@@ -26,6 +27,7 @@ public class PostService {
     private final AuthenticationService authenticationService;
     private final LikeRepository likeRepository;
     private final CommentRepository commentRepository;
+    private final BookmarkRepository bookmarkRepository;
 
     public PostResponse createPost(PostRequest request) {
         User currentUser = authenticationService.getCurrentUser();
@@ -50,10 +52,12 @@ public class PostService {
             Long likeCount = likeRepository.countByPostId(post.getId());
             boolean isLiked = likeRepository.existsByUserAndPost(currentUser, post);
             Long commentCount = commentRepository.countByPostId(post.getId());
+            boolean isBookmarked = bookmarkRepository.existsByUserAndPost(currentUser, post);
 
             response.setLikeCount(likeCount);
             response.setLiked(isLiked);
             response.setCommentCount(commentCount);
+            response.setBookmarked(isBookmarked);
 
             return response;
         });
@@ -68,10 +72,12 @@ public class PostService {
             Long likeCount = likeRepository.countByPostId(post.getId());
             boolean isLiked = likeRepository.existsByUserAndPost(currentUser, post);
             Long commentCount = commentRepository.countByPostId(post.getId());
+            boolean isBookmarked = bookmarkRepository.existsByUserAndPost(currentUser, post);
 
             response.setLikeCount(likeCount);
             response.setLiked(isLiked);
             response.setCommentCount(commentCount);
+            response.setBookmarked(isBookmarked);
 
             return response;
         });
@@ -104,7 +110,7 @@ public class PostService {
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
 
         if (!post.getUser().getId().equals(currentUser.getId())) {
-            throw new UnauthorizedException("You are not authorized to delete this post");
+            throw new UnauthorizedException("You are not authorized to update this post");
         }
 
         post.setDeleted(true);
