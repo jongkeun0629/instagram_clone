@@ -1,8 +1,8 @@
 import { create } from "zustand";
 import followService from "../services/follow";
 
-const useFollowStore = create((set) => ({
-  followStatus: null,
+const useFollowStore = create((set, get) => ({
+  followStatuses: {},
   followers: null,
   following: null,
   loading: false,
@@ -14,14 +14,18 @@ const useFollowStore = create((set) => ({
       const { following, followersCount, followingCount } =
         await followService.toggleFollow(userId);
 
-      set({
-        followStatus: {
-          isFollowing: following,
-          followersCount,
-          followingCount,
+      // 있으면 업데이트, 없으면 생성
+      set((state) => ({
+        followStatuses: {
+          ...state.followStatuses,
+          [userId]: {
+            isFollowing: following,
+            followersCount,
+            followingCount,
+          },
         },
         loading: false,
-      });
+      }));
 
       return { isFollowing: following, followersCount, followingCount };
     } catch (err) {
@@ -39,14 +43,18 @@ const useFollowStore = create((set) => ({
       const { following, followersCount, followingCount } =
         await followService.getFollowStatus(userId);
 
-      set({
-        followStatus: {
-          isFollowing: following,
-          followersCount,
-          followingCount,
+      // 있으면 업데이트, 없으면 생성
+      set((state) => ({
+        followStatuses: {
+          ...state.followStatuses,
+          [userId]: {
+            isFollowing: following,
+            followersCount,
+            followingCount,
+          },
         },
         loading: false,
-      });
+      }));
 
       return { isFollowing: following, followersCount, followingCount };
     } catch (err) {
@@ -56,6 +64,11 @@ const useFollowStore = create((set) => ({
       });
       throw err;
     }
+  },
+
+  getFollowStatusByUserId: (userId) => {
+    const state = get();
+    return state.followStatuses[userId] || null;
   },
 }));
 

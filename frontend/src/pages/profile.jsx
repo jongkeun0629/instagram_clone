@@ -2,38 +2,31 @@ import { FiArrowLeft, FiBookmark, FiGrid, FiLock } from "react-icons/fi";
 import Avatar from "../components/common/Avatar";
 import useFollowStore from "../store/followStore";
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import useUserStore from "../store/userStore";
 import useAuthStore from "../store/authStore";
 import usePostStore from "../store/postStore";
 import PostList from "../components/post/PostList";
 import useBookmarkStore from "../store/bookmarkStore";
 import BookmarkCard from "../components/bookmark/BookmarkCard";
+import FollowButton from "../components/follow/FollowButton";
 
 const Profile = () => {
   const { username } = useParams();
+  const navigate = useNavigate();
 
-  const { followStatus, getFollowStatus, toggleFollow } = useFollowStore();
+  const { getFollowStatus, toggleFollow, getFollowStatusByUserId } =
+    useFollowStore();
   const { userProfile, getUserProfile } = useUserStore();
   const { user: currentUser } = useAuthStore();
   const { userPosts, userPostCount, getUserPosts, getUserPostCount } =
     usePostStore();
-  const { bookmarkedPosts, toggleBookmark, getBookmarkedPosts } =
-    useBookmarkStore();
+  const { bookmaredPosts, getBookmarkedPosts } = useBookmarkStore();
 
   const [activeTab, setActiveTab] = useState("posts");
 
   const isOwnProfile = currentUser?.username === userProfile?.username;
-
-  const handleFollow = async () => {
-    try {
-      if (!userProfile) return;
-
-      await toggleFollow(userProfile.id);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  const followStatus = getFollowStatusByUserId(userProfile?.id);
 
   useEffect(() => {
     const loadUserProfile = async () => {
@@ -96,12 +89,12 @@ const Profile = () => {
     loadBookmarkedPosts();
   }, [activeTab, currentUser, getBookmarkedPosts]);
 
-  useEffect(() => console.log(bookmarkedPosts), [bookmarkedPosts]);
+  useEffect(() => console.log(bookmaredPosts), [bookmaredPosts]);
 
   return (
     <div className="bg-gray-50">
       <div className="bg-white min-h-screen max-w-2xl mx-auto flex flex-col">
-        <header className="bg-white border-b border-gray-300 sticky top-0 z-40">
+        <header className="border-b border-gray-300 sticky top-0 z-40">
           <div className="flex items-center justify-between px-4 py-4">
             <Link className="text-gray-700 hover:text-black" to="/">
               <FiArrowLeft size={24} />
@@ -125,18 +118,7 @@ const Profile = () => {
                     Edit Profile
                   </button>
                 ) : (
-                  <button
-                    className={`px-4 py-1 border border-gray-300 rounded-md text-sm font-medium transition-colors duration-200 
-                      ${
-                        followStatus?.isFollowing
-                          ? "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                          : "bg-pink-500 text-white hover:bg-pink-600"
-                      }
-                      `}
-                    onClick={handleFollow}
-                  >
-                    {followStatus?.isFollowing ? "Unfollow" : "Follow"}
-                  </button>
+                  <FollowButton user={userProfile} />
                 )}
               </div>
 
@@ -151,11 +133,23 @@ const Profile = () => {
             <p className="font-semibold">{userPostCount || 0}</p>
             <p className="text-gray-500 text-sm">posts</p>
           </div>
-          <button className="text-center hover:opacity-70 transition-opacity cursor-pointer">
+          <button
+            className="text-center hover:opacity-70 transition-opacity cursor-pointer"
+            onClick={() =>
+              userProfile &&
+              navigate(`/profile/${userProfile.username}/followers`)
+            }
+          >
             <p className="font-semibold">{followStatus?.followersCount || 0}</p>
             <p className="text-gray-500 text-sm">followers</p>
           </button>
-          <button className="text-center hover:opacity-70 transition-opacity cursor-pointer">
+          <button
+            className="text-center hover:opacity-70 transition-opacity cursor-pointer"
+            onClick={() =>
+              userProfile &&
+              navigate(`/profile/${userProfile.username}/following`)
+            }
+          >
             <p className="font-semibold">{followStatus?.followingCount || 0}</p>
             <p className="text-gray-500 text-sm">following</p>
           </button>
@@ -202,10 +196,10 @@ const Profile = () => {
             <>
               {isOwnProfile ? (
                 <div className="grid grid-cols-3 gap-1">
-                  {bookmarkedPosts?.map((bookmarkedPost) => (
+                  {bookmaredPosts?.map((bookmaredPost) => (
                     <BookmarkCard
-                      key={bookmarkedPost.id}
-                      bookmarkedPost={bookmarkedPost}
+                      key={bookmaredPost.id}
+                      bookmarkedPost={bookmaredPost}
                     />
                   ))}
                 </div>
