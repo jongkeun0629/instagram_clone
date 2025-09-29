@@ -21,7 +21,7 @@ const Profile = () => {
   const { user: currentUser } = useAuthStore();
   const { userPosts, userPostCount, getUserPosts, getUserPostCount } =
     usePostStore();
-  const { bookmaredPosts, getBookmarkedPosts } = useBookmarkStore();
+  const { bookmarkedPosts, getBookmarkedPosts } = useBookmarkStore();
 
   const [activeTab, setActiveTab] = useState("posts");
 
@@ -89,12 +89,12 @@ const Profile = () => {
     loadBookmarkedPosts();
   }, [activeTab, currentUser, getBookmarkedPosts]);
 
-  useEffect(() => console.log(bookmaredPosts), [bookmaredPosts]);
+  useEffect(() => console.log(bookmarkedPosts), [bookmarkedPosts]);
 
   return (
     <div className="bg-gray-50">
       <div className="bg-white min-h-screen max-w-2xl mx-auto flex flex-col">
-        <header className="border-b border-gray-300 sticky top-0 z-40">
+        <header className="bg-white border-b border-gray-300 sticky top-0 z-40">
           <div className="flex items-center justify-between px-4 py-4">
             <Link className="text-gray-700 hover:text-black" to="/">
               <FiArrowLeft size={24} />
@@ -114,9 +114,12 @@ const Profile = () => {
                   {userProfile?.username}
                 </h2>
                 {isOwnProfile ? (
-                  <button className="px-4 py-1 border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-50">
+                  <Link
+                    className="px-4 py-1 border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-50"
+                    to="/edit-profile"
+                  >
                     Edit Profile
-                  </button>
+                  </Link>
                 ) : (
                   <FollowButton user={userProfile} />
                 )}
@@ -196,10 +199,10 @@ const Profile = () => {
             <>
               {isOwnProfile ? (
                 <div className="grid grid-cols-3 gap-1">
-                  {bookmaredPosts?.map((bookmaredPost) => (
+                  {bookmarkedPosts?.map((bookmarkedPost) => (
                     <BookmarkCard
-                      key={bookmaredPost.id}
-                      bookmarkedPost={bookmaredPost}
+                      key={bookmarkedPost.id}
+                      bookmarkedPost={bookmarkedPost}
                     />
                   ))}
                 </div>

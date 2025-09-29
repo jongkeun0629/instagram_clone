@@ -20,4 +20,10 @@ public class S3Controller {
         return ResponseEntity.ok(Map.of("url", url));
     }
 
+    @PostMapping("/profile")
+    public ResponseEntity<Map<String, String>> uploadProfileImage(@RequestParam("file") MultipartFile file) {
+        String url = s3Service.uploadFile(file, "jongkeun/profile");
+        return ResponseEntity.ok(Map.of("url", url));
+    }
+
 }

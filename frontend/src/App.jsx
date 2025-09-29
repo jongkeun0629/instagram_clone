@@ -7,6 +7,7 @@ import useAuthStore from "./store/authStore";
 import OAuth2Callback from "./pages/OAuth2Callback";
 import Profile from "./pages/profile";
 import FollowList from "./pages/follow-list";
+import EditProfile from "./pages/edit-profile";
 
 const App = () => {
   const { isAuthenticated } = useAuthStore();
@@ -31,6 +32,12 @@ const App = () => {
           path="/profile/:username"
           element={
             isAuthenticated ? <Profile /> : <Navigate to="/login" replace />
+          }
+        />
+        <Route
+          path="/edit-profile"
+          element={
+            isAuthenticated ? <EditProfile /> : <Navigate to="/login" replace />
           }
         />
         <Route
